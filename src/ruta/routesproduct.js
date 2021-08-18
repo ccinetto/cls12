@@ -53,9 +53,9 @@ router.post('/guardar', (req, res) => {
 
     const newItem = ProductoController.agregarItem(newProduct);
 
+    //LE envio a todos el nuevo producto usando ws
     const wsserver = sockerService.getServer();
-    console.log(newItem);
-    wsserver.emit('bokita', {
+    wsserver.emit('newProduct', {
       newItem,
     });
 
