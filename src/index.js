@@ -3,7 +3,8 @@ import path from 'path';
 import handlebars from 'express-handlebars';
 import routesproduct from './ruta/routesproduct';
 import * as http from 'http';
-import io from 'socket.io';
+import { ProductoController } from './classProduct';
+import { sockerService } from './services/socket';
 
 const app = express();
 const puerto = 8080;
@@ -29,25 +30,18 @@ app.engine(
 
 const myServer = http.Server(app);
 myServer.listen(puerto, () => console.log('SERVER UP en puerto', puerto));
-const myWSServer = io(myServer);
-const messages = [];
 
-myWSServer.on('connection', (socket) => {
-  console.log('Cliente Conectado');
-  console.log(`Cliente SID => ${socket.client.id}`);
-  console.log(`SERVER SID ===> ${socket.id}`);
-
-  socket.on('new-message', (data) => {
-    console.log('RECIBI UN MSJ NUEVO');
-    console.log(data);
-    messages.push(data);
-    socket.emit('messages', messages);
-  });
-});
+sockerService.initWSServer(myServer);
 
 app.get('/', (req, res) => {
-  res.render('main', { layout: 'index' });
+  const data = {
+    layout: 'index',
+    productos: ProductoController.leerItems(),
+  };
+  res.render('main', data);
 });
+
+app.use(express.json());
 
 app.use('/api/productos', routesproduct);
 

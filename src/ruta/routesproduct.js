@@ -1,5 +1,7 @@
 import express from 'express';
 import { ProductoController } from '../classProduct';
+import { sockerService } from '../services/socket';
+
 const router = express.Router();
 
 router.get('/listar', (req, res) => {
@@ -33,7 +35,7 @@ router.get('/guardar', (req, res) => {
 router.post('/guardar', (req, res) => {
   try {
     const body = req.body;
-    console.log(JSON.stringify(body));
+    console.log(req.body);
 
     if (body == undefined) {
       return res.status(400).json({
@@ -47,11 +49,19 @@ router.post('/guardar', (req, res) => {
       price: body.price,
     };
 
+    console.log(newProduct);
+
     const newItem = ProductoController.agregarItem(newProduct);
+
+    const wsserver = sockerService.getServer();
+    console.log(newItem);
+    wsserver.emit('bokita', {
+      newItem,
+    });
 
     res.status(201).json({
       mensaje: 'Producto agregado',
-      data: newItem,
+      newItem,
     });
   } catch (err) {
     console.log('ERRROR');

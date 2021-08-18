@@ -3,9 +3,6 @@ const nombre = document.getElementById('nombre');
 const precio = document.getElementById('price');
 const imagen = document.getElementById('thumbnail');
 
-console.log(nombre);
-console.log(precio);
-console.log(imagen);
 function sendMsg(e) {
   let mensaje = {
     nombre: nombre.value,
@@ -29,10 +26,31 @@ function render(data) {
   document.getElementById('messages').innerHTML = html;
 }
 
+function AddProduct(item) {
+  const row = `
+  <tr>
+  <th class="row">${item.title}</th>
+  <td>${item.price}</td>
+  <td><img src="${item.thumbnail}" width="50px" height="50px"></td>
+  </tr>
+  `;
+
+  const newData = document.getElementById('myProducts').innerHTML + row;
+  // console.log(newData);
+  document.getElementById('myProducts').innerHTML = newData;
+}
+
 socket.on('messages', (data) => {
   console.log('Recibi Mensaje');
 
   render(data);
+});
+
+socket.on('newProduct', (data) => {
+  console.log('Recibi Mensaje');
+  const { newItem } = data;
+  AddProduct(newItem);
+  console.log(newItem);
 });
 
 const form = document.getElementById('miForm');
@@ -50,18 +68,19 @@ form.addEventListener('submit', function (e) {
 
   const options = {
     method: 'POST',
-    mode: 'no-cors',
-    headers: {
-      'Content-Type': 'application/json',
-      // 'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: JSON.stringify(data), // body data type must match "Content-Type" header
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(data),
   };
 
   fetch('/api/productos/guardar', options)
+    .then((response) => response.json())
     .then((data) => {
       console.log('TODO BIEN');
-      console.log(data);
+
+      const { id } = data.newItem;
+
+      console.log(id);
+
       console.log('LUEGO ACTUALIZAR LA INFO DE LA PAGINA AQUI');
     })
     .catch((err) => {
